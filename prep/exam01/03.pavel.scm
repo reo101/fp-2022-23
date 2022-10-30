@@ -63,3 +63,32 @@
 
 ;; (is-major? '((1 3) (4 2 7) (2 5 4 3 9 12))) → #t
 ;; (is-major? '((1 3) (4 2 7) (2 5 3 3 9 12))) → #f
+
+(define find-longest-major
+  (lambda (ll)
+    (letrec
+      ((find-longest-major-acc
+         (lambda (ll curr most)
+           (if (< (length ll) 2)
+             (if (< (length curr)
+                    (length most))
+               most
+               curr)
+             (if (sub-major? (car  ll)
+                             (cadr ll))
+               (find-longest-major-acc
+                 (cdr ll)
+                 (cons (car ll)
+                       curr)
+                 most)
+               (find-longest-major-acc
+                 (cdr ll)
+                 '()
+                 (if (< (+ 1 (length curr))
+                        (length most))
+                   most
+                   (cons (car ll)
+                         curr))))))))
+      (reverse (find-longest-major-acc ll '() '())))))
+
+;; (find-longest-major '((1) (2) (1) (2) (3) (1) (2))) → '((1) (2) (3))
