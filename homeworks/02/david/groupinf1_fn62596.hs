@@ -116,14 +116,9 @@ isCanceled = (== Canceled) . status
 -- ESSENCE OF SOLUTION
 getRefund :: Agency -> String -> String -> Maybe Double
 getRefund Agency{customers} customerName tripDestination = do
-
-  currentCustomerTrips
-    <- trips <$> find ((== customerName) . cName) customers
-
-  currentTrip@(Trip{status = currentStatus, price = currentPrice})
-    <- find ((== tripDestination) . destination) currentCustomerTrips
-
-  case currentStatus of
+  currentCustomerTrips <- trips <$> find ((== customerName) . cName) customers
+  currentTrip <- find ((== tripDestination) . destination) currentCustomerTrips
+  case status currentTrip of
     InProgress -> Just 0.0
     Upcoming -> do
 
@@ -142,11 +137,11 @@ getRefund Agency{customers} customerName tripDestination = do
             -- --alternatively :D
             -- flip filter currentCustomerTrips $ liftA2 (&&) isCanceled (/= currentTrip)
             filter isCanceled $
-            filter (/= currentTrip) $
+            filter (/= currentTrip)
             currentCustomerTrips
 
       let fee = quotient * canceledAvg
 
-      Just $ max 0 $ k * c * currentPrice - fee
+      Just $ max 0 $ k * c * price currentTrip - fee
 
     _ -> Nothing
