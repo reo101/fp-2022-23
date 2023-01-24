@@ -7,10 +7,22 @@
 {-# HLINT ignore "Use &&" #-}
 {-# HLINT ignore "Avoid lambda using `infix`" #-}
 
-import Data.Functor.Const (Const (..))
-import Data.Functor.Identity (Identity (..))
-
 ---- Optics
+
+newtype Identity a = Identity { runIdentity :: a }
+
+instance Functor Identity where
+  fmap :: (a -> b) -> Identity a -> Identity b
+  fmap fab (Identity a) = Identity $ fab a
+
+newtype Const a b = Const { getConst :: a }
+
+instance Functor (Const m) where
+    fmap _ (Const v) = Const v
+
+instance Monoid m => Applicative (Const m) where
+    pure = const $ Const mempty
+    (<*>) (Const x) (Const y) = Const $ x `mappend` y
 
 class Profunctor p where
   dimap :: (a -> b) -> (c -> d) -> p b c -> p a d
@@ -30,8 +42,6 @@ instance Profunctor (->) where
   dimap = flip ((.) . (.)) . flip (.)
 
 type Iso s t a b = forall p f. (Profunctor p, Functor f) => p a (f b) -> p s (f t)
-
--- type Lens = Iso @(->)
 
 --- Lens
 type Lens s t a b = forall f. (Functor f) => (a -> f b) -> (s -> f t)
