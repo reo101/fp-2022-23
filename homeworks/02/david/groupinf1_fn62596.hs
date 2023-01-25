@@ -8,7 +8,6 @@
 
 import GHC.Natural (Natural)
 import Data.List (find, nub)
-import Control.Monad (guard)
 import Data.Function (on)
 import Data.Maybe (mapMaybe)
 
@@ -84,11 +83,11 @@ freeTripEligibleCustomers
           , hasNoDuplicates $ map destination trips -- never visited a destination twice
           ]
         where
-          total :: (Num a) => (Trip -> a) -> a
-          total getter = sum $ map getter trips
+          total :: (Num a) => (b -> a) -> [b] -> a
+          total getter = sum . map getter
 
-          totalSpendings = total price
-          totalTime = total $ sum . map duration . activities
+          totalSpendings = total price trips
+          totalTime = total (total duration . activities) trips
           -- -- originally, like that:
           -- hasNoDuplicates xs = ((==) `on` length) xs (nub xs)
           -- -- or like that :P
